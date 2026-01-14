@@ -1,0 +1,21 @@
+{
+    "name": "appkit/cache-redis",
+    "type": "library",
+    "description": "Redis-based cache implementation for the AppKit framework",
+    "license": "MIT",
+    "require": {
+        "appkit/cache": "^1.0",
+        "appkit/health": "^1.0",
+        "appkit/json": "^1.0",
+        "appkit/redis": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AppKit\\Cache\\Redis\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
