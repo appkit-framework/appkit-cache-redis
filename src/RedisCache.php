@@ -31,12 +31,19 @@ class RedisCache implements HealthIndicatorInterface, CacheInterface {
         return Json::decode($value);
     }
 
-    public function set($key, $value, $ttl = 0) {
-        $value = Json::encode($value);
-        if(!$ttl)
-            $this -> client -> set($key, $value);
-        else
-            $this -> client -> set($key, $value, 'EX', $ttl);
+    public function set($key, $value, $ttl = 0, $get = false) {
+        $args = [ $key, Json::encode($value) ];
+        if($get) {
+            $args[] = 'GET';
+        }
+        if($ttl) {
+            $args[] = 'EX';
+            $args[] = $ttl;
+        }
+
+        $oldValue = $this -> client -> set(...$args);
+        if($get)
+            return $oldValue;
     }
 
     public function increment($key, $by = 1) {
