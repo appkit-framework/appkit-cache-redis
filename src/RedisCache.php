@@ -1,6 +1,6 @@
 <?php
 
-namespace AppKit\Cache;
+namespace AppKit\Cache\Redis;
 
 use AppKit\Health\HealthIndicatorInterface;
 use AppKit\Health\HealthCheckResult;
