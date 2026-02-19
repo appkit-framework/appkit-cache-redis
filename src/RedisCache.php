@@ -21,18 +21,36 @@ class RedisCache implements HealthIndicatorInterface, CacheInterface {
     }
 
     public function has($key) {
-        return (bool) $this -> client -> exists($key);
+        return (bool) $this -> command('exists', $key);
     }
 
     public function get($key) {
-        $value = $this -> client -> get($key);
+        $value = $this -> command('get', $key);
         if($value === null)
             return null;
-        return Json::decode($value);
+
+        try {
+            return Json::decode($value);
+        } catch(Throwable $e) {
+            throw new RedisCacheException(
+                'Failed to decode value: ' . $e -> getMessage(),
+                previous: $e
+            );
+        }
     }
 
     public function set($key, $value, $ttl = 0, $get = false) {
-        $args = [ $key, Json::encode($value) ];
+        $args = [ $key ];
+
+        try {
+            $args[] = Json::encode($value);
+        } catch(Throwable $e) {
+            throw new RedisCacheException(
+                'Failed to encode value: ' . $e -> getMessage(),
+                previous: $e
+            );
+        }
+
         if($get) {
             $args[] = 'GET';
         }
@@ -41,24 +59,35 @@ class RedisCache implements HealthIndicatorInterface, CacheInterface {
             $args[] = $ttl;
         }
 
-        $oldValue = $this -> client -> set(...$args);
+        $oldValue = $this -> client -> command('set', ...$args);
         if($get)
             return $oldValue;
     }
 
     public function increment($key, $by = 1) {
-        return $this -> client -> incrby($key, $by);
+        return $this -> command('incrby', $key, $by);
     }
 
     public function decrement($key, $by = 1) {
-        return $this -> client -> decrby($key, $by);
+        return $this -> command('decrby', $key, $by);
     }
 
     public function delete($key) {
-        return $this -> client -> delete($key);
+        return $this -> command('delete', $key);
     }
 
     public function clear() {
-        return $this -> client -> flushdb();
+        return $this -> command('flushdb');
+    }
+
+    private function command($command, ...$args) {
+        try {
+            return $this -> client -> command($command, ...$args);
+        } catch(Throwable $e) {
+            throw new RedisCacheException(
+                "Command $command failed: " . $e -> getMessage(),
+                previous: $e
+            );
+        }
     }
 }
