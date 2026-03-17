@@ -72,7 +72,7 @@ class RedisCache implements HealthIndicatorInterface, CacheInterface {
         return $this -> command('decrby', $key, $by);
     }
 
-    public function delete($key) {
+    public function unset($key) {
         return $this -> command('delete', $key);
     }
 
